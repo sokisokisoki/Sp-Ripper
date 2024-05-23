@@ -1,0 +1,8 @@
+Find a way to go from Playlists to mp3
+    Yt -> YtMp3
+
+Making Basic Website
+
+Adding in playlist transfer functionality
+
+Put on github
