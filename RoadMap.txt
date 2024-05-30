@@ -6,3 +6,11 @@ Making Basic Website
 Adding in playlist transfer functionality
 
 Put on github
+
+just loop in main code
+pl by pl    
+pass in pl name
+make pl in yt code
+return yt pls to main code
+
+sptoyttomp3@gmail.com
