@@ -1,20 +1,12 @@
 
 import spotipy
-import webbrowser
 import re
+import time
 
 from spotipy.oauth2 import SpotifyClientCredentials
 
 from PlaylistObj import PlaylistObj
-
-def extract_user(string):
-    index = string.find("user/")  # Find the index of "user/"
-    if index != -1:  # If "user/" is found
-        return string[index + len("user/"):]  # Extract everything after "user/"
-    else:
-        return None  # Return None if "user/" is not found
-
-
+from SongObj import SongObj
 
 
 def extract_user_id(url):
@@ -24,8 +16,8 @@ def extract_user_id(url):
     return None
 
 #taken from https://stackoverflow.com/a/39113522    
-def get_playlist_tracks(username,playlist_id):
-    results = sp.user_playlist_tracks(username,playlist_id)
+def get_playlist_tracks(playlist_id):
+    results = sp.playlist_tracks(playlist_id)
     tracks = results['items']
     while results['next']:
         results = sp.next(results)
@@ -51,6 +43,7 @@ display_name = username['display_name']
 
 #playlists_names = []
 
+#COLLECTS PLAYLISTS edit here for time save?
 playlists_info = sp.user_playlists(userID)
 playlists_names = playlists_info['items']
 
@@ -103,7 +96,6 @@ while k:
             print(currPL['name'])
             print()
 
-            #tracks = get_playlist_tracks(userID, playlists_info[focus])
 
         else:
             print('Invalid input\n')
@@ -147,49 +139,76 @@ else:
         activePLs[num] = pl_numPairs[num]
 
 
+
+
+#start_time = time.time()
+
+
 #list of playlist objs
 plObjs = []
 
 for items in activePLs:
-    currPL = activePLs[items]
 
-    tracklist = sp.playlist_tracks(currPL['id'])
-    tracks = tracklist['items']
-    while tracklist['next']:
-        tracklist = sp.next(tracklist)
-        tracks.extend(tracklist['items'])
+    currPL = activePLs[items]
+        
+    #get tracks other edit for time save
+    tracks = get_playlist_tracks(currPL['id'])
 
     #isolated song list
     tL = []
+    t_o_l = []
+    
 
     for track in tracks:
-        
-        trackName = track['track']
+                
+        trackDetail = track['track']
 
         try:
-            songDesc = trackName['name'] + ' by '
+            songName = trackDetail['name']
+            songDesc = trackDetail['name'] + ' by '
+            currSongObj = SongObj(str(songName))
+            currSongObj.setTrackLen(trackDetail['duration_ms'])
 
-            if len(trackName['artists']) == 1:
-                songDesc += trackName['artists'][0]['name']
+            if len(trackDetail['artists']) == 1:
+                songDesc += trackDetail['artists'][0]['name']
+                currSongObj.addArtists(trackDetail['artists'][0]['name'])
 
             else:
                 aList = []
-                for arts in trackName['artists']:
+                for arts in trackDetail['artists']:
                     aList.append(arts['name'])
 
                 songDesc += f"{', '.join(aList)}"
+                currSongObj.addArtists(aList)
 
             tL.append(songDesc)
+            t_o_l.append(currSongObj)
 
         except:
             print('No song name found. Skipped')
             print(track)
 
-    
 
     plObj = PlaylistObj(currPL['name'])
     plObj.addTracks(tL)
     plObj.setURL(currPL['images'][0]['url'])
+    plObj.addTrackObj(t_o_l)
 
 
     plObjs.append(plObj)
+
+# end_time = time.time()
+# elapsed_time = end_time - start_time
+# print(f"Elapsed time: {elapsed_time} seconds")
+
+#plObjs[0].dispObjs()
+
+'''
+for spPlayList in plObjs:
+    name = spPlayList.getName()
+    songs = spPlayList.getTracks()
+    #YtPl = ytobj(name, songs)
+'''
+
+url = plObjs[0].getCoverUrl()
+print(url)
